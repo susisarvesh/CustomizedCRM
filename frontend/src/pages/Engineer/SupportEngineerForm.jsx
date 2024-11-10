@@ -12,10 +12,12 @@ export default function SupportEngineerForm() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  const API_URL = import.meta.env.MODE === "development" ? "http://localhost:5000/api" : "/api";
+
   useEffect(() => {
     const fetchEngineers = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/users');
+        const response = await axios.get(`${API_URL}/users`);
         setEngineers(response.data);
       } catch (err) {
         console.error('Error fetching engineers:', err);
@@ -37,7 +39,7 @@ export default function SupportEngineerForm() {
     }
 
     try {
-      const response = await axios.post('http://localhost:5000/api/users', {
+      const response = await axios.post(`${API_URL}/users`, {
         name,
         position,
         email,
@@ -46,7 +48,7 @@ export default function SupportEngineerForm() {
       });
 
       setSuccess(response.data.message);
-      const updatedResponse = await axios.get('http://localhost:5000/api/users');
+      const updatedResponse = await axios.get(`${API_URL}/users`);
       setEngineers(updatedResponse.data);
 
       setName('');
@@ -62,7 +64,7 @@ export default function SupportEngineerForm() {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/users/${id}`);
+      await axios.delete(`${API_URL}/users/${id}`);
       setEngineers(engineers.filter(engineer => engineer._id !== id));
       setSuccess('Engineer deleted successfully.');
     } catch (err) {

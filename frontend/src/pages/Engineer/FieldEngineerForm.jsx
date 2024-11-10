@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { motion } from 'framer-motion'; // Import framer-motion
+import { motion } from 'framer-motion';
 
 export default function AddEngineer() {
   const [name, setName] = useState('');
@@ -12,10 +12,12 @@ export default function AddEngineer() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  const API_URL = import.meta.env.MODE === "development" ? "http://localhost:5000/api" : "/api";
+
   useEffect(() => {
     const fetchEngineers = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/fieldengineer');
+        const response = await axios.get(`${API_URL}/fieldengineer`);
         setEngineers(response.data);
       } catch (err) {
         console.error('Error fetching engineers:', err);
@@ -24,7 +26,7 @@ export default function AddEngineer() {
     };
 
     fetchEngineers();
-  }, []);
+  }, [API_URL]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -37,7 +39,7 @@ export default function AddEngineer() {
     }
 
     try {
-      const response = await axios.post('http://localhost:5000/api/fieldengineer', {
+      const response = await axios.post(`${API_URL}/fieldengineer`, {
         name,
         position,
         email,
@@ -46,9 +48,10 @@ export default function AddEngineer() {
       });
 
       setSuccess(response.data.message);
-      const updatedResponse = await axios.get('http://localhost:5000/api/fieldengineer');
+      const updatedResponse = await axios.get(`${API_URL}/fieldengineer`);
       setEngineers(updatedResponse.data);
 
+      // Clear input fields
       setName('');
       setPosition('');
       setEmail('');
@@ -62,7 +65,7 @@ export default function AddEngineer() {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/fieldengineer/${id}`);
+      await axios.delete(`${API_URL}/fieldengineer/${id}`);
       setEngineers(engineers.filter(engineer => engineer._id !== id));
       setSuccess('Engineer deleted successfully.');
     } catch (err) {
@@ -77,14 +80,14 @@ export default function AddEngineer() {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1, // Stagger the animation by 0.1 seconds for each card
+        staggerChildren: 0.1,
       },
     },
   };
 
   const cardVariants = {
-    hidden: { opacity: 0, y: 20 }, // Cards start off invisible and slightly below the normal position
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }, // Fade in and move upwards
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
   };
 
   return (
