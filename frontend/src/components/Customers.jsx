@@ -1,27 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { motion } from 'framer-motion';
+import { motion } from 'framer-motion'; // Import framer-motion
 
 export default function Customers() {
+  // Set the API URL conditionally based on the environment mode
+  const API_URL = import.meta.env.MODE === 'development' ? 'http://localhost:5000/api' : '/api';
+
   const [name, setName] = useState('');
+  const [position, setPosition] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [companyName, setCompanyName] = useState('');
-  const [customers, setCustomers] = useState([]);
+  const [engineers, setEngineers] = useState([]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
   useEffect(() => {
-    const fetchCustomers = async () => {
+    const fetchEngineers = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/customers');
-        setCustomers(response.data);
+        const response = await axios.get(`${API_URL}/customers`);
+        setEngineers(response.data);
       } catch (err) {
         console.error('Error fetching customers:', err);
         setError('Error fetching customers');
       }
     };
-    fetchCustomers();
+
+    fetchEngineers();
   }, []);
 
   const handleSubmit = async (e) => {
@@ -35,7 +40,7 @@ export default function Customers() {
     }
 
     try {
-      const response = await axios.post('http://localhost:5000/api/customers', {
+      const response = await axios.post(`${API_URL}/customers`, {
         name,
         email,
         phone,
@@ -43,49 +48,52 @@ export default function Customers() {
       });
 
       setSuccess(response.data.message);
-      setTimeout(() => setSuccess(''), 3000); // Clear success message after 3 seconds
-      const updatedResponse = await axios.get('http://localhost:5000/api/customers');
-      setCustomers(updatedResponse.data);
+      const updatedResponse = await axios.get(`${API_URL}/customers`);
+      setEngineers(updatedResponse.data);
 
       setName('');
+      setPosition('');
       setEmail('');
       setPhone('');
       setCompanyName('');
     } catch (err) {
       console.error('Error:', err);
-      setError(err.response ? err.response.data.message : 'Error creating customer');
+      setError(err.response ? err.response.data.message : 'Error creating user');
     }
   };
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/customers/${id}`);
-      setCustomers(customers.filter(customer => customer._id !== id));
-      setSuccess('Customer deleted successfully.');
-      setTimeout(() => setSuccess(''), 3000);
+      await axios.delete(`${API_URL}/customers/${id}`);
+      setEngineers(engineers.filter(engineer => engineer._id !== id));
+      setSuccess('Engineer deleted successfully.');
     } catch (err) {
-      console.error('Error deleting customer:', err);
-      setError('Error deleting customer');
+      console.error('Error deleting customers:', err);
+      setError('Error deleting customers');
     }
   };
 
+  // Animation variants for staggered entrance
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: { staggerChildren: 0.1 },
+      transition: {
+        staggerChildren: 0.1, // Stagger the animation by 0.1 seconds for each card
+      },
     },
   };
 
   const cardVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+    hidden: { opacity: 0, y: 20 }, // Cards start off invisible and slightly below the normal position
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }, // Fade in and move upwards
   };
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
       <h1 className="text-2xl font-semibold text-orange-800 mb-6">Add Customer</h1>
 
+      {/* Form for adding an engineer */}
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label className="block text-gray-700" htmlFor="name">Name</label>
@@ -137,15 +145,16 @@ export default function Customers() {
 
         <button
           type="submit"
-          className="w-full bg-orange-600 text-white rounded-md py-2 hover:bg-orange-700 transition"
+          className="w-full bg-orange-600 text-white rounded-md py-2 hover:bg-orange-700"
         >
-          Add Customer 
+          Add Customer
         </button>
 
         {error && <p className="mt-4 text-red-600">{error}</p>}
         {success && <p className="mt-4 text-green-600">{success}</p>}
       </form>
 
+      {/* Displaying the list of engineers as cards with animation */}
       <h2 className="text-xl font-semibold text-orange-800 mt-6">Customers List</h2>
       <motion.div
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4"
@@ -153,18 +162,18 @@ export default function Customers() {
         initial="hidden"
         animate="visible"
       >
-        {customers.map((customer) => (
+        {engineers.map((engineer) => (
           <motion.div
-            key={customer._id}
+            key={engineer._id}
             className="bg-gray-50 p-4 rounded-lg shadow hover:shadow-lg transition-shadow"
             variants={cardVariants}
           >
-            <h3 className="text-lg font-semibold text-gray-900">{customer.name}</h3>
-            <p className="text-gray-700"><strong>Email:</strong> {customer.email}</p>
-            <p className="text-gray-700"><strong>Phone:</strong> {customer.phone}</p>
-            <p className="text-gray-700"><strong>Company:</strong> {customer.companyName}</p>
+            <h3 className="text-lg font-semibold text-gray-900">{engineer.name}</h3>
+            <p className="text-gray-700"><strong>Email:</strong> {engineer.email}</p>
+            <p className="text-gray-700"><strong>Phone:</strong> {engineer.phone}</p>
+            <p className="text-gray-700"><strong>Company:</strong> {engineer.companyName}</p>
             <button
-              onClick={() => handleDelete(customer._id)}
+              onClick={() => handleDelete(engineer._id)}
               className="mt-4 text-red-600 hover:text-red-800"
             >
               Delete
