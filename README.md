@@ -2,7 +2,7 @@
 
 
 
-About This Course:
+About This Project:
 
 -   🔧 Backend Setup
 -   🗄️ Database Setup
